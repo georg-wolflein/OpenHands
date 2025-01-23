@@ -1,5 +1,6 @@
 import atexit
 from functools import lru_cache
+import os
 from typing import Callable
 
 import docker
@@ -244,6 +245,29 @@ class DockerRuntime(ActionExecutionClient):
                 }
             }
             logger.debug(f'Mount dir: {self.config.workspace_mount_path}')
+
+            ### BEGIN: MODIFIED CODE ###
+            if (
+                input_mount_path := os.getenv('DATA_INPUT_MOUNT', None)
+            ):
+                volumes[input_mount_path] = {
+                    "bind": "/mount/input",
+                    "mode": "rw",
+                }
+                print(f"MOUNTED INPUT MOUNT: {input_mount_path} to /mount/input")
+            else:
+                print(f"INPUT MOUNT NOT FOUND: {input_mount_path}")
+            if (
+                output_mount_path := os.getenv('DATA_OUTPUT_MOUNT', None)
+            ):
+                volumes[output_mount_path] = {
+                    "bind": "/mount/output",
+                    "mode": "rw",
+                }
+                print(f"MOUNTED OUTPUT MOUNT: {output_mount_path} to /mount/output")
+            else:
+                print(f"OUTPUT MOUNT NOT FOUND: {output_mount_path}")
+            ### END: MODIFIED CODE ###
         else:
             logger.debug(
                 'Mount dir is not set, will not mount the workspace directory to the container'
